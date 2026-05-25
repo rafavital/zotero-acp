@@ -5,6 +5,23 @@ Zotero 9 plugin implementing the Agent Client Protocol (ACP), enabling AI agents
 # Core Directives
 
 - **Always consult your `agent-client-protocol` skill before suggesting or implementing changes to the project.** This ensures all architectural decisions and message patterns align with the standardized protocol.
+- **Strictly follow the Git Workflow below for all versioning actions.**
+
+# Git Workflow
+
+## Conventional Branches
+Branches MUST follow the pattern `<type>/<short-description>`:
+- `feat/` - New features (e.g., `feat/pdf-extraction`)
+- `fix/` - Bug fixes (e.g., `fix/transport-timeout`)
+- `chore/` - Maintenance and configuration (e.g., `chore/update-deps`)
+- `docs/` - Documentation only (e.g., `docs/readme-update`)
+- `refactor/` - Code restructuring without behavioral changes
+- `test/` - Adding or correcting tests
+
+## Conventional Commits
+All commits MUST follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+- Format: `<type>(<scope>): <description>`
+- Always include an AI co-author signature in the trailer.
 
 # Technology Stack
 
