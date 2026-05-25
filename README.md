@@ -1,26 +1,25 @@
 # Zotero ACP Plugin
 
-Este plugin implementa o **Agent Client Protocol (ACP)** para o Zotero 9, permitindo que agentes de IA se conectem ao Zotero como um editor através de uma interface padronizada.
+This plugin implements the **Agent Client Protocol (ACP)** for Zotero 9, allowing AI agents to connect to Zotero as an editor through a standardized interface.
 
-## Decisões Técnicas
+## Technical Decisions
 
-- **Plataforma:** Zotero 9 (baseado em Firefox ESR 115+).
-- **Arquitetura:** *Bootstrapped Plugin* (sem reinicialização), utilizando `manifest.json` e `bootstrap.js`.
-- **Linguagem:** TypeScript, compilado via `esbuild` para gerar assets compatíveis com o motor do Mozilla.
-- **Transporte ACP:** Utilização de `stdio` (stdin/stdout) para comunicação com agentes locais. A gestão de subprocessos será feita via APIs nativas do Mozilla (ex: `Subprocess.jsm` ou `nsIProcess`).
-- **Interface:** Injeção dinâmica de UI na Sidebar/Item Pane, sem o uso de XUL Overlays (depreciados).
+- **Platform:** Zotero 9 (based on Firefox ESR 115+).
+- **Architecture:** _Bootstrapped Plugin_ (restartless), using `manifest.json` and `bootstrap.js`.
+- **Language:** TypeScript, compiled via `esbuild` to generate assets compatible with the Mozilla engine.
+- **ACP Transport:** Uses `stdio` (stdin/stdout) for communication with local agents. Subprocess management is handled via native Mozilla APIs (e.g., `Subprocess.jsm`).
+- **Interface:** Dynamic UI injection into the Sidebar/Item Pane, without using XUL Overlays (deprecated).
 
-## Estrutura do Projeto
+## Project Structure
 
-- `src/bootstrap.ts`: Ponto de entrada e gerenciamento do ciclo de vida do plugin.
-- `src/ui/`: Futuro diretório para componentes da interface (Web Components/React).
-- `manifest.json`: Manifesto de metadados do plugin.
-- `esbuild.mjs`: Configuração do bundler para gerar o pacote final.
+- `src/bootstrap.ts`: Entry point and plugin lifecycle management.
+- `src/ui/`: Future directory for interface components (Web Components/React).
+- `manifest.json`: Plugin metadata manifest.
+- `esbuild.mjs`: Bundler configuration to generate the final package.
 
-## Como Desenvolver
+## How to Develop
 
-1. Instale as dependências: `npm install`.
-2. Execute o build: `npm run build`.
-3. O arquivo `build/bootstrap.js` será gerado.
-4. Para carregar no Zotero, aponte para o diretório raiz do projeto no modo de desenvolvedor do Zotero ou empacote como um `.xpi` (zip).# zotero-acp
-# zotero-acp
+1. Install dependencies: `npm install`.
+2. Run the build: `npm run build`.
+3. The `build/bootstrap.js` file will be generated.
+4. To load in Zotero, point to the project's root directory in Zotero's developer mode or package it as an `.xpi` (zip).

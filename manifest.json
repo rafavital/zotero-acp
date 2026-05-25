@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "Zotero ACP",
+  "version": "0.1.0",
+  "description": "Agent Client Protocol (ACP) integration for Zotero",
+  "author": "Rafael",
+  "applications": {
+    "zotero": {
+      "id": "zotero-acp@rafa.dev",
+      "update_url": "https://github.com/rafa/zotero-acp/releases/latest/download/update.json",
+      "strict_min_version": "6.99",
+      "strict_max_version": "9.0.*"
+    }
+  }
+}
