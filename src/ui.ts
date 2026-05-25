@@ -54,19 +54,21 @@ export class ACPUI {
     container.id = "zotero-acp-ui-container";
     container.style.display = "flex";
     container.style.flexDirection = "column";
-    container.style.gap = "8px";
-    container.style.padding = "10px";
+    container.style.height = "100%";
+    container.style.padding = "8px";
+    container.style.boxSizing = "border-box";
 
     const chatHistory = doc.createElement("div");
     chatHistory.id = "zotero-acp-chat-history";
     chatHistory.style.flex = "1";
-    chatHistory.style.minHeight = "150px";
-    chatHistory.style.maxHeight = "400px";
     chatHistory.style.overflowY = "auto";
-    chatHistory.style.border = "1px solid #ccc";
-    chatHistory.style.padding = "5px";
-    chatHistory.style.backgroundColor = "#f9f9f9";
+    chatHistory.style.border = "1px solid var(--border-color, #ccc)";
+    chatHistory.style.borderRadius = "4px";
+    chatHistory.style.padding = "8px";
+    chatHistory.style.backgroundColor = "var(--fill-main, #f9f9f9)";
     chatHistory.style.fontSize = "12px";
+    chatHistory.style.marginBottom = "8px";
+    chatHistory.style.minHeight = "200px";
 
     const inputArea = doc.createElement("div");
     inputArea.style.display = "flex";
@@ -75,20 +77,40 @@ export class ACPUI {
     const input = doc.createElement("input");
     input.type = "text";
     input.style.flex = "1";
+    input.style.padding = "4px 8px";
     input.placeholder = Zotero.Intl.getString("zotero-acp-chat-placeholder") || "Type a message...";
     
     const sendBtn = doc.createElement("button");
     sendBtn.textContent = Zotero.Intl.getString("zotero-acp-send-button") || "Send";
+    sendBtn.style.padding = "4px 12px";
+    
+    const restartBtn = doc.createElement("button");
+    restartBtn.textContent = "Restart"; // TODO: Localize
+    restartBtn.style.padding = "4px 8px";
+    restartBtn.style.fontSize = "10px";
     
     sendBtn.onclick = () => {
       const text = input.value.trim();
       if (text) {
-        this.addMessageToHistory(chatHistory, "User", text);
+        this.addMessageToHistory(chatHistory, "user", text);
         input.value = "";
-        // Dispatch event for bootstrap to handle sending to agent
+        
+        // Dispatch structured event
         const event = new doc.defaultView.CustomEvent("zotero-acp-send-prompt", {
-          detail: { prompt: text, itemID: item?.id }
+          detail: { 
+            prompt: text, 
+            itemID: item?.id,
+            timestamp: Date.now()
+          }
         });
+        doc.dispatchEvent(event);
+      }
+    };
+
+    restartBtn.onclick = () => {
+      if (confirm("Are you sure you want to restart the AI agent?")) {
+        this.addMessageToHistory(chatHistory, "system", "Restarting agent...");
+        const event = new doc.defaultView.CustomEvent("zotero-acp-restart-agent");
         doc.dispatchEvent(event);
       }
     };
@@ -99,6 +121,7 @@ export class ACPUI {
 
     inputArea.appendChild(input);
     inputArea.appendChild(sendBtn);
+    inputArea.appendChild(restartBtn);
 
     container.appendChild(chatHistory);
     container.appendChild(inputArea);
@@ -106,19 +129,34 @@ export class ACPUI {
 
     // Initial message
     if (item) {
-      this.addMessageToHistory(chatHistory, "System", `Context: ${item.getField('title')}`);
+      this.addMessageToHistory(chatHistory, "system", `Context: ${item.getField('title')}`);
+    } else {
+      this.addMessageToHistory(chatHistory, "system", "No item selected.");
     }
   }
 
-  private addMessageToHistory(history: HTMLElement, sender: string, text: string) {
+  private addMessageToHistory(history: HTMLElement, sender: 'user' | 'agent' | 'system', text: string) {
     const doc = history.ownerDocument;
     const msg = doc.createElement("div");
-    msg.style.marginBottom = "4px";
+    msg.style.marginBottom = "6px";
+    msg.style.lineHeight = "1.4";
+    
+    const colors = {
+      user: "var(--text-main, #333)",
+      agent: "#0056b3",
+      system: "#666"
+    };
+
+    const label = sender.charAt(0).toUpperCase() + sender.slice(1);
+    
     const boldSender = doc.createElement("strong");
-    boldSender.textContent = `${sender}: `;
+    boldSender.textContent = `${label}: `;
+    boldSender.style.color = colors[sender];
+    
     msg.appendChild(boldSender);
     const textNode = doc.createTextNode(text);
     msg.appendChild(textNode);
+    
     history.appendChild(msg);
     history.scrollTop = history.scrollHeight;
   }

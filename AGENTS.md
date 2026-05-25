@@ -2,6 +2,10 @@
 
 Zotero 9 plugin implementing the Agent Client Protocol (ACP), enabling AI agents to interact with Zotero as an editor via stdio and XPCOM.
 
+# Core Directives
+
+- **Always consult your `agent-client-protocol` skill before suggesting or implementing changes to the project.** This ensures all architectural decisions and message patterns align with the standardized protocol.
+
 # Technology Stack
 
 - **Runtime**: Zotero 9 (Firefox ESR 115+)

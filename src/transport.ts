@@ -20,6 +20,7 @@ export interface ACPMessage {
 export class ACPTransport {
   private process: any = null;
   private onMessageCallback: (msg: ACPMessage) => void = () => {};
+  private onExitCallback: (exitCode: number) => void = () => {};
 
   constructor(private binaryPath: string, private args: string[] = ["--acp"]) {}
 
@@ -34,11 +35,31 @@ export class ACPTransport {
       });
 
       this.readLoop();
+      this.monitorExit();
       return true;
     } catch (e) {
       console.error("Zotero ACP: Failed to start agent process", e);
       return false;
     }
+  }
+
+  private async monitorExit() {
+    try {
+      const { exitCode } = await this.process.wait();
+      Zotero.debug(`Zotero ACP: Agent process exited with code ${exitCode}`);
+      this.onExitCallback(exitCode);
+    } catch (e) {
+      Zotero.error("Zotero ACP: Error waiting for process exit", e);
+    } finally {
+      this.process = null;
+    }
+  }
+
+  /**
+   * Register a callback for when the process exits.
+   */
+  onExit(callback: (exitCode: number) => void) {
+    this.onExitCallback = callback;
   }
 
   /**
@@ -68,14 +89,15 @@ export class ACPTransport {
     try {
       while (this.process) {
         const chunk = await this.process.stdout.readString();
-        if (!chunk) break;
+        if (chunk === null) break;
 
         buffer += chunk;
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+        let newlineIndex;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          const line = buffer.slice(0, newlineIndex).trim();
+          buffer = buffer.slice(newlineIndex + 1);
 
-        for (const line of lines) {
-          if (line.trim()) {
+          if (line) {
             try {
               const msg = JSON.parse(line);
               this.onMessageCallback(msg);
@@ -86,7 +108,10 @@ export class ACPTransport {
         }
       }
     } catch (e) {
-      console.error("Zotero ACP: stdout read error", e);
+      // Avoid logging error if process was intentionally stopped
+      if (this.process) {
+        console.error("Zotero ACP: stdout read error", e);
+      }
     }
   }
 
@@ -96,6 +121,7 @@ export class ACPTransport {
   async stop() {
     if (this.process) {
       try {
+        this.onExitCallback = () => {}; // Prevent exit handler from firing
         await this.process.kill();
       } catch (e) {
         // Process might already be dead
